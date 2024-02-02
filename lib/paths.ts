@@ -1,10 +1,7 @@
 const paths = {
-  homePage() {
-    return "/";
-  },
-  loginPage() {
-    return "/auth/login";
-  },
+  homePage: () => "/",
+  loginPage: () => "/auth/login",
+  registerPage: () => "/auth/register",
 };
 
 export default paths;
