@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import paths from "@/lib/paths";
 import CardWrapper from "./card-wrapper";
-import { LoginSchema } from "@/schemas";
+import { LoginSchema, LoginSchemaType } from "@/schemas";
 import {
   Form,
   FormControl,
@@ -18,10 +18,15 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import FormAlert from "../form-alert";
-
-type LoginSchemaType = z.infer<typeof LoginSchema>;
+import { login } from "@/actions/login";
+import { useState, useTransition } from "react";
 
 export default function LoginForm() {
+  const [error, setError] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
+
+  const [isPending, startTransition] = useTransition();
+
   const form = useForm<LoginSchemaType>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -31,7 +36,15 @@ export default function LoginForm() {
   });
 
   function onSubmit(values: LoginSchemaType) {
-    console.log(values);
+    setError("");
+    setSuccess("");
+
+    startTransition(() =>
+      login(values).then((data) => {
+        setError(data.error);
+        setSuccess(data.success);
+      }),
+    );
   }
 
   return (
@@ -52,6 +65,7 @@ export default function LoginForm() {
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
+                      disabled={isPending}
                       {...field}
                       placeholder="john.doe@example.com"
                       type="email"
@@ -68,7 +82,12 @@ export default function LoginForm() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="******" type="password" />
+                    <Input
+                      disabled={isPending}
+                      {...field}
+                      placeholder="******"
+                      type="password"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -76,10 +95,10 @@ export default function LoginForm() {
             />
           </div>
 
-          <FormAlert variant="error" message="" />
-          <FormAlert variant="success" message="" />
+          <FormAlert variant="error" message={error} />
+          <FormAlert variant="success" message={success} />
 
-          <Button type="submit" className="w-full">
+          <Button disabled={isPending} type="submit" className="w-full">
             Login
           </Button>
         </form>
