@@ -8,7 +8,8 @@ export async function getUserByEmail(email: string) {
   }
 }
 
-export async function getUserById(id: string) {
+export async function getUserById(id?: string) {
+  if (!id) return null;
   try {
     return db.user.findUnique({ where: { id } });
   } catch {
